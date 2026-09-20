@@ -8,3 +8,4 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 bunori-sdk.workspace = true
+readnovelfull-template = { path = "../../templates/readnovelfull" }

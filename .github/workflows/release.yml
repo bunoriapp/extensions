@@ -74,7 +74,7 @@ jobs:
             echo "Forcing compilation of ALL extensions!"
             EXTRA_FLAGS="--compile-all"
           fi
-          python3 tools/package_extensions.py --bext-dir dist --out-dir repo $EXTRA_FLAGS
+          python3 tools/package.py --bext-dir dist --out-dir repo $EXTRA_FLAGS
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4

@@ -1,11 +1,11 @@
 """
 Scaffolding CLI for creating a new Bunori extension source.
-Generates manifest.json, Cargo.toml, and a starter src/lib.rs.
+Generates manifest.json, Cargo.toml, and src/lib.rs.
 
 Usage:
-  python tools/new_extension.py
-  python tools/new_extension.py -n "Novel Hi" -u "https://novelhi.com"
-  python tools/new_extension.py --name "Novel Hi" --url "https://novelhi.com" --lang en --id novelhi
+  python tools/source.py
+  python tools/source.py -n "WuxiaWorld Site" -u "https://wuxiaworld.site" --template madara
+  python tools/source.py --name "Novel Hi" --url "https://novelhi.com" --lang en --id novelhi
 """
 
 import argparse
@@ -31,7 +31,7 @@ def to_pascal_case(name: str) -> str:
     return pascal
 
 
-def create_extension(name: str, base_url: str, ext_id: str | None = None, lang: str = "en"):
+def create_source(name: str, base_url: str, ext_id: str | None = None, lang: str = "en", template: str | None = None):
     project_root = Path(__file__).resolve().parent.parent
     sources_dir = project_root / "sources"
 
@@ -63,7 +63,7 @@ def create_extension(name: str, base_url: str, ext_id: str | None = None, lang: 
     manifest = {
         "id": ext_id,
         "name": name,
-        "version": "1.0.0",
+        "version": "0.0",
         "apiVersion": 1,
         "lang": lang,
         "baseUrl": base_url,
@@ -78,8 +78,67 @@ def create_extension(name: str, base_url: str, ext_id: str | None = None, lang: 
         json.dump(manifest, f, indent=2)
         f.write("\n")
 
-    # 3. Generate Cargo.toml
-    cargo_toml = f"""[package]
+    # 3. Generate Cargo.toml & src/lib.rs
+    if template:
+        template_id = sanitize_id(template)
+        template_crate = f"{template_id}-template"
+        engine_struct = f"{to_pascal_case(template_id)}Engine"
+
+        cargo_toml = f"""[package]
+name = "{ext_id}"
+version.workspace = true
+edition.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+bunori-sdk.workspace = true
+{template_crate} = {{ path = "../../templates/{template_id}" }}
+"""
+        lib_rs = f"""use bunori_sdk::*;
+use {template_crate.replace('-', '_')}::{engine_struct};
+
+#[derive(Default)]
+pub struct {pascal_name}Source;
+
+impl {pascal_name}Source {{
+    fn engine(&self) -> {engine_struct} {{
+        let meta = self.metadata();
+        {engine_struct}::new(meta.base_url)
+    }}
+}}
+
+impl Source for {pascal_name}Source {{
+    fn metadata(&self) -> SourceMetadata {{
+        serde_json::from_str(include_str!("../manifest.json")).expect("Invalid manifest.json")
+    }}
+
+    fn search(&self, query: &str, page: i32) -> Result<Vec<SearchResultDto>, String> {{
+        self.engine().search(query, page)
+    }}
+
+    fn get_novel_details(&self, novel_url: &str) -> Result<NovelDto, String> {{
+        self.engine().get_novel_details(novel_url)
+    }}
+
+    fn get_chapter_content(&self, chapter_url: &str) -> Result<Option<String>, String> {{
+        self.engine().get_chapter_content(chapter_url)
+    }}
+
+    fn get_listings(&self) -> Vec<ListingDto> {{
+        self.engine().get_listings()
+    }}
+
+    fn get_listing_novels(&self, listing_id: &str, page: i32) -> Result<Vec<SearchResultDto>, String> {{
+        self.engine().get_listing_novels(listing_id, page)
+    }}
+}}
+
+export_source!({pascal_name}Source);
+"""
+    else:
+        cargo_toml = f"""[package]
 name = "{ext_id}"
 version.workspace = true
 edition.workspace = true
@@ -90,12 +149,7 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 bunori-sdk.workspace = true
 """
-    cargo_path = target_dir / "Cargo.toml"
-    with open(cargo_path, "w", encoding="utf-8") as f:
-        f.write(cargo_toml)
-
-    # 4. Generate starter src/lib.rs
-    lib_template = """use bunori_sdk::*;
+        lib_template = """use bunori_sdk::*;
 use std::collections::HashMap;
 
 #[derive(Default)]
@@ -225,28 +279,36 @@ impl Source for __PASCAL_NAME__Source {
 
 export_source!(__PASCAL_NAME__Source);
 """
-    lib_rs = lib_template.replace("__PASCAL_NAME__", pascal_name)
+        lib_rs = lib_template.replace("__PASCAL_NAME__", pascal_name)
+
+    cargo_path = target_dir / "Cargo.toml"
+    with open(cargo_path, "w", encoding="utf-8") as f:
+        f.write(cargo_toml)
+
     lib_path = src_dir / "lib.rs"
     with open(lib_path, "w", encoding="utf-8") as f:
         f.write(lib_rs)
 
-    print(f"\n✨ Successfully created new extension: {name} ({ext_id})")
+    print(f"\n✨ Successfully created new source extension: {name} ({ext_id})")
     print(f"  📁 Location:  sources/{ext_id}/")
     print(f"  📄 Manifest:  sources/{ext_id}/manifest.json")
     print(f"  ⚙ Cargo:     sources/{ext_id}/Cargo.toml")
     print(f"  🦀 Code:      sources/{ext_id}/src/lib.rs")
+    if template:
+        print(f"  🧩 Template:  templates/{template}/")
     print("\nNext steps:")
-    print(f"  1. Edit sources/{ext_id}/src/lib.rs and add your CSS selectors.")
-    print(f"  2. Test compilation: cargo check --package {ext_id} --target wasm32-unknown-unknown")
+    print(f"  1. Test compilation: cargo check --package {ext_id}")
+    print(f"  2. Test host:        python tools/test_extension.py {ext_id}")
     print(f"  3. Package it:        python tools/package_extensions.py --single {ext_id}\n")
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Create a new Bunori extension skeleton.")
+    parser = argparse.ArgumentParser(description="Create a new Bunori source extension skeleton.")
     parser.add_argument("-n", "--name", help="Human-readable extension name (e.g. 'Novel Hi')")
     parser.add_argument("-u", "--url", help="Base URL for the website (e.g. 'https://novelhi.com')")
     parser.add_argument("-i", "--id", help="Extension identifier (optional, default: derived from name)")
     parser.add_argument("-l", "--lang", default="en", help="Language code (default: 'en')")
+    parser.add_argument("-t", "--template", help="Template engine crate to use (e.g. 'madara')")
 
     args = parser.parse_args()
 
@@ -274,7 +336,7 @@ def main():
         print("Error: Base URL cannot be empty.", file=sys.stderr)
         sys.exit(1)
 
-    create_extension(name=name, base_url=url, ext_id=args.id, lang=args.lang)
+    create_source(name=name, base_url=url, ext_id=args.id, lang=args.lang, template=args.template)
 
 
 if __name__ == "__main__":

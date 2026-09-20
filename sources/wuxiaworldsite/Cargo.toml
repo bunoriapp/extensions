@@ -1,5 +1,5 @@
 [package]
-name = "novelfull"
+name = "wuxiaworldsite"
 version.workspace = true
 edition.workspace = true
 
@@ -8,4 +8,4 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 bunori-sdk.workspace = true
-readnovelfull-template = { path = "../../templates/readnovelfull" }
+madara-template = { path = "../../templates/madara" }

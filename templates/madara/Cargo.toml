@@ -1,11 +1,12 @@
 [package]
-name = "novelfire"
+name = "madara-template"
 version.workspace = true
 edition.workspace = true
 
 [lib]
-crate-type = ["cdylib", "rlib"]
+crate-type = ["rlib"]
 
 [dependencies]
 bunori-sdk.workspace = true
-novelfire-template = { path = "../../templates/novelfire" }
+serde.workspace = true
+serde_json.workspace = true

@@ -2,18 +2,24 @@ use bunori_sdk::*;
 use readnovelfull_template::ReadNovelFullEngine;
 
 #[derive(Default)]
-pub struct NovGoSource;
+pub struct ReadNovelFullSource;
 
-impl NovGoSource {
+impl ReadNovelFullSource {
     fn engine(&self) -> ReadNovelFullEngine {
         let meta = self.metadata();
         let mut engine = ReadNovelFullEngine::new(meta.base_url);
-        engine.chapter_endpoint = "ajax-chapter-option".into();
+        engine.search_path = "novel-list/search".into();
+        engine.chapter_endpoint = "ajax/chapter-archive".into();
+        engine.listings = vec![
+            ListingDto { id: "novel-list/latest-release-novel".into(), name: "Latest Release".into() },
+            ListingDto { id: "novel-list/hot-novel".into(), name: "Hot Novels".into() },
+            ListingDto { id: "novel-list/completed-novel".into(), name: "Completed Novels".into() },
+        ];
         engine
     }
 }
 
-impl Source for NovGoSource {
+impl Source for ReadNovelFullSource {
     fn metadata(&self) -> SourceMetadata {
         serde_json::from_str(include_str!("../manifest.json")).expect("Invalid manifest.json")
     }
@@ -27,7 +33,6 @@ impl Source for NovGoSource {
     }
 
     fn get_chapter_content(&self, chapter_url: &str) -> Result<Option<String>, String> {
-        // Can call engine default or write custom extraction logic here
         self.engine().get_chapter_content(chapter_url)
     }
 
@@ -40,4 +45,4 @@ impl Source for NovGoSource {
     }
 }
 
-export_source!(NovGoSource);
+export_source!(ReadNovelFullSource);

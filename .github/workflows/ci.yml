@@ -82,14 +82,14 @@ jobs:
         run: |
           if [ "${{ steps.changes.outputs.compile_all }}" = "true" ]; then
             echo "⚡ Compiling and verifying ALL extensions..."
-            python3 tools/package_extensions.py \
+            python3 tools/package.py \
               --compile-all \
               --no-remote-baseline \
               --bext-dir /tmp/bext \
               --out-dir /tmp/repo
           elif [ -n "${{ steps.changes.outputs.changed_exts }}" ]; then
             echo "⚡ Compiling and verifying changed extension(s): ${{ steps.changes.outputs.changed_exts }}..."
-            python3 tools/package_extensions.py \
+            python3 tools/package.py \
               --compile-all \
               --include "${{ steps.changes.outputs.changed_exts }}" \
               --no-remote-baseline \

@@ -1,19 +1,19 @@
 use bunori_sdk::*;
-use readnovelfull_template::ReadNovelFullEngine;
+use madara_template::MadaraEngine;
 
 #[derive(Default)]
-pub struct NovGoSource;
+pub struct LunarLettersSource;
 
-impl NovGoSource {
-    fn engine(&self) -> ReadNovelFullEngine {
+impl LunarLettersSource {
+    fn engine(&self) -> MadaraEngine {
         let meta = self.metadata();
-        let mut engine = ReadNovelFullEngine::new(meta.base_url);
-        engine.chapter_endpoint = "ajax-chapter-option".into();
+        let mut engine = MadaraEngine::new(meta.base_url);
+        engine.use_new_chapter_endpoint = true;
         engine
     }
 }
 
-impl Source for NovGoSource {
+impl Source for LunarLettersSource {
     fn metadata(&self) -> SourceMetadata {
         serde_json::from_str(include_str!("../manifest.json")).expect("Invalid manifest.json")
     }
@@ -27,7 +27,6 @@ impl Source for NovGoSource {
     }
 
     fn get_chapter_content(&self, chapter_url: &str) -> Result<Option<String>, String> {
-        // Can call engine default or write custom extraction logic here
         self.engine().get_chapter_content(chapter_url)
     }
 
@@ -40,4 +39,4 @@ impl Source for NovGoSource {
     }
 }
 
-export_source!(NovGoSource);
+export_source!(LunarLettersSource);

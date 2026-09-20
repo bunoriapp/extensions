@@ -1,0 +1,13 @@
+{
+  "id": "novelbuddy",
+  "name": "NovelBuddy",
+  "version": "0.1",
+  "apiVersion": 1,
+  "lang": "en",
+  "baseUrl": "https://novelbuddy.me",
+  "iconUrl": "https://novelbuddy.me/favicon.ico",
+  "webviewNeeded": false,
+  "runnerConcurrency": 3,
+  "runnerCooldown": 1000,
+  "maxAttempts": 3
+}

@@ -5,12 +5,7 @@ import time
 import urllib.error
 import urllib.request
 from pathlib import Path
-
-try:
-    from curl_cffi import requests as curl_requests
-except ImportError:
-    curl_requests = None
-
+from curl_cffi import requests as curl_requests
 from wasmtime import Engine, Func, FuncType, Linker, Memory, Module, Store, ValType
 
 

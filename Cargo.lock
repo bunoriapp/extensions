@@ -199,10 +199,27 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f9f8bd3e56ce4dfc153cf470fffbfa98c7620958b312ca5c3a4b8d5181fd13c6"
 
 [[package]]
+name = "lunarletters"
+version = "0.1.0"
+dependencies = [
+ "bunori-sdk",
+ "madara-template",
+]
+
+[[package]]
 name = "mac"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c41e0c4fef86961ac6d6f8a82609f55f31b05e4fce149ac5710e439df7619ba4"
+
+[[package]]
+name = "madara-template"
+version = "0.1.0"
+dependencies = [
+ "bunori-sdk",
+ "serde",
+ "serde_json",
+]
 
 [[package]]
 name = "markup5ever"
@@ -246,7 +263,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "novelbuddy"
+version = "0.1.0"
+dependencies = [
+ "bunori-sdk",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "novelfire"
+version = "0.1.0"
+dependencies = [
+ "bunori-sdk",
+ "novelfire-template",
+]
+
+[[package]]
+name = "novelfire-template"
 version = "0.1.0"
 dependencies = [
  "bunori-sdk",
@@ -257,6 +291,7 @@ name = "novelfull"
 version = "0.1.0"
 dependencies = [
  "bunori-sdk",
+ "readnovelfull-template",
 ]
 
 [[package]]
@@ -264,6 +299,7 @@ name = "novelphoenix"
 version = "0.1.0"
 dependencies = [
  "bunori-sdk",
+ "novelfire-template",
 ]
 
 [[package]]
@@ -278,6 +314,7 @@ name = "novgo"
 version = "0.1.0"
 dependencies = [
  "bunori-sdk",
+ "readnovelfull-template",
 ]
 
 [[package]]
@@ -466,6 +503,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
 dependencies = [
  "getrandom 0.2.17",
+]
+
+[[package]]
+name = "readnovelfull"
+version = "0.1.0"
+dependencies = [
+ "bunori-sdk",
+ "readnovelfull-template",
+]
+
+[[package]]
+name = "readnovelfull-template"
+version = "0.1.0"
+dependencies = [
+ "bunori-sdk",
 ]
 
 [[package]]
@@ -731,6 +783,14 @@ name = "wit-bindgen"
 version = "0.57.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1ebf944e87a7c253233ad6766e082e3cd714b5d03812acc24c318f549614536e"
+
+[[package]]
+name = "wuxiaworldsite"
+version = "0.1.0"
+dependencies = [
+ "bunori-sdk",
+ "madara-template",
+]
 
 [[package]]
 name = "zerocopy"

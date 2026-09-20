@@ -1,0 +1,13 @@
+{
+  "id": "wuxiaworldsite",
+  "name": "WuxiaWorld.Site",
+  "version": "0.0",
+  "apiVersion": 1,
+  "lang": "en",
+  "baseUrl": "https://wuxiaworld.site",
+  "iconUrl": "https://wuxiaworld.site/favicon.ico",
+  "webviewNeeded": false,
+  "runnerConcurrency": 3,
+  "runnerCooldown": 1000,
+  "maxAttempts": 3
+}

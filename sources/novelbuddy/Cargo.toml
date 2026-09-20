@@ -1,5 +1,5 @@
 [package]
-name = "novelfull"
+name = "novelbuddy"
 version.workspace = true
 edition.workspace = true
 
@@ -8,4 +8,5 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 bunori-sdk.workspace = true
-readnovelfull-template = { path = "../../templates/readnovelfull" }
+serde.workspace = true
+serde_json.workspace = true
