@@ -198,6 +198,39 @@ class BunoriHostRunner:
             raise RuntimeError(f"get_listing_novels for '{listing_id}' failed in extension (returned null/0). See [ERROR] logs above.")
         return json.loads(self._read_and_free_string(packed))
 
+def parse_cookie_input(raw: str) -> str:
+    if not raw:
+        return ""
+    raw = raw.strip()
+    if not raw:
+        return ""
+    lines = [line.strip() for line in raw.splitlines() if line.strip() and not line.strip().startswith("#")]
+    if not lines:
+        return ""
+    
+    # Check if lines are formatted as 'key value' or tab-separated
+    cookie_pairs = []
+    is_multi_line_format = False
+    for line in lines:
+        parts = line.split(None, 1)
+        if len(parts) >= 2 and "=" not in parts[0]:
+            # Netscape TSV or space-separated key value format
+            # In case there are more columns (e.g. domain, path, expiry), extract value
+            val_parts = parts[1].split()
+            val = val_parts[0] if len(val_parts) > 1 and ("." in val_parts[1] or "/" in val_parts[1]) else parts[1].strip()
+            cookie_pairs.append(f"{parts[0]}={val}")
+            is_multi_line_format = True
+        elif "=" in line:
+            # Could be lines of key=value
+            cookie_pairs.append(line.rstrip(";"))
+            is_multi_line_format = True
+
+    if is_multi_line_format and cookie_pairs:
+        return "; ".join(cookie_pairs)
+
+    return raw.replace("\n", " ").strip()
+
+
 def main():
     parser = argparse.ArgumentParser(description="Test Bunori WASM extensions directly in python.")
     parser.add_argument("extension_id", help="Extension crate ID (for instance asianovel, novelarchive)")
@@ -214,12 +247,20 @@ def main():
     parser.add_argument("--user-agent", "-u", default="", help="Custom User-Agent string")
     args = parser.parse_args()
 
-    cookie = args.cookie
+    project_root = Path(__file__).resolve().parent.parent
+    tools_dir = Path(__file__).resolve().parent
+    default_cookie_file = tools_dir / "cookies"
+
+    cookie = ""
     if args.cookie_file:
         with open(args.cookie_file, "r") as f:
-            cookie = f.read().strip()
+            cookie = parse_cookie_input(f.read())
+    elif args.cookie:
+        cookie = parse_cookie_input(args.cookie)
+    elif default_cookie_file.exists():
+        with open(default_cookie_file, "r") as f:
+            cookie = parse_cookie_input(f.read())
 
-    project_root = Path(__file__).resolve().parent.parent
     crate_name = args.extension_id.replace("-", "_")
     wasm_path = Path(args.wasm_path) if args.wasm_path else (
         project_root / "target" / "wasm32-unknown-unknown" / "release" / f"{crate_name}.wasm"

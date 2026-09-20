@@ -16,7 +16,6 @@ impl NovelUpdatesSource {
             trimmed.to_string()
         } else {
             let mut s = trimmed.to_string();
-            // Match lnreader transformation: replace 'v' with 'volume ' and 'c' with ' chapter '
             if let Some(pos) = s.to_lowercase().find('v') {
                 let after = s[pos + 1..].trim_start();
                 if after.starts_with(|c: char| c.is_ascii_digit()) {
@@ -80,11 +79,13 @@ impl NovelUpdatesSource {
     }
 
     fn parse_novel_list(doc: &Html, base_url: &str) -> Result<Vec<SearchResultDto>, String> {
-        let item_sel = Selector::parse("div.search_main_box_nu, div.w-blog-entry, .search_body_nu").map_err(|e| e.to_string())?;
+        let item_sel = Selector::parse("div.search_main_box_nu, div.w-blog-entry").map_err(|e| e.to_string())?;
         let title_sel = Selector::parse(".search_title > a, .w-blog-entry-title a, h2 a").map_err(|e| e.to_string())?;
         let cover_sel = Selector::parse(".search_img_nu img, .w-blog-entry-thumbnail img, img").map_err(|e| e.to_string())?;
 
         let mut results = Vec::new();
+        let mut seen_urls = std::collections::HashSet::new();
+
         for el in doc.select(&item_sel) {
             let Some(title_el) = el.select(&title_sel).next() else { continue; };
             let title = title_el.text().collect::<Vec<_>>().join("").trim().to_string();
@@ -95,10 +96,20 @@ impl NovelUpdatesSource {
                 format!("{}{}", base_url, href)
             };
 
+            if !seen_urls.insert(url.clone()) {
+                continue;
+            }
+
             let cover_url = el
                 .select(&cover_sel)
                 .next()
-                .and_then(|img| img.value().attr("src"))
+                .and_then(|img| {
+                    img.value()
+                        .attr("src")
+                        .or_else(|| img.value().attr("data-src"))
+                        .or_else(|| img.value().attr("data-original"))
+                        .or_else(|| img.value().attr("data-cfsrc"))
+                })
                 .map(|s| {
                     if s.starts_with("http") {
                         s.to_string()
