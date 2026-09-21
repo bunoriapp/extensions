@@ -7,7 +7,7 @@
 <br />
 
 [![License](https://img.shields.io/github/license/bunoriapp/extensions?style=for-the-badge&labelColor=0d1117)](https://github.com/bunoriapp/extensions/blob/main/LICENSE)
-[![Discord](https://img.shields.io/badge/Discord-%235865F2.svg?style=for-the-badge&logo=discord&logoColor=white&labelColor=0d1117)](https://discord.gg/A6cY7pN6Y)
+[![Discord](https://img.shields.io/badge/Discord-%235865F2.svg?style=for-the-badge&logo=discord&logoColor=white&labelColor=0d1117)](https://discord.gg/WzpTJuS4JT)
 
 <br />
 

@@ -328,7 +328,7 @@ export_source!(__PASCAL_NAME__Source);
 
     # 4. Fetch & optimize website icon (WebP)
     try:
-        from fetch_icons import fetch_and_save_icon
+        from tools.icons import fetch_and_save_icon
         fetch_and_save_icon(target_dir)
     except Exception as e:
         print(f"  ⚠ Could not auto-fetch icon: {e}")
