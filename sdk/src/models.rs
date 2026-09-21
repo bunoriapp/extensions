@@ -11,6 +11,8 @@ pub struct SourceMetadata {
     pub lang: String,
     #[serde(rename = "baseUrl")]
     pub base_url: String,
+    #[serde(rename = "iconPath", skip_serializing_if = "Option::is_none")]
+    pub icon_path: Option<String>,
     #[serde(rename = "iconUrl", skip_serializing_if = "Option::is_none")]
     pub icon_url: Option<String>,
     #[serde(default)]

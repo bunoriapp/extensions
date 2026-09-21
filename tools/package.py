@@ -330,10 +330,10 @@ def build_bext(
     # Check for icon
     icon_path = None
     icon_file = None
-    for ext_suffix in (".png", ".webp", ".jpg"):
+    for ext_suffix in (".webp", ".png", ".jpg", ".jpeg"):
         candidates = [
             source_dir / f"icon{ext_suffix}",
-            icons_dir / f"{ext_id}{ext_suffix}"
+            icons_dir / f"{ext_id}{ext_suffix}",
         ]
         for c in candidates:
             if c.exists():
@@ -381,9 +381,11 @@ def build_bext(
         if changelog_file.exists():
             zf.write(changelog_file, "CHANGELOG.md")
 
-    # Copy icon to output_dir if needed for publishing on repo branch
-    if icon_file and icon_path:
-        dest_icon = output_dir / icon_path
+    # Copy icon to output_dir/icons/ for publishing on repository index branch
+    repo_icon_rel_path = None
+    if icon_file:
+        repo_icon_rel_path = f"icons/{ext_id}{icon_file.suffix}"
+        dest_icon = output_dir / repo_icon_rel_path
         dest_icon.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(icon_file, dest_icon)
 
@@ -399,8 +401,8 @@ def build_bext(
             bext_download_url = f"https://github.com/{github_repo}/releases/download/{release_tag}/{bext_filename}"
         else:
             bext_download_url = f"https://github.com/{github_repo}/releases/latest/download/{bext_filename}"
-        if icon_path and not icon_url:
-            icon_url = f"https://{owner.lower()}.github.io/{repo_name}/{icon_path}"
+        if repo_icon_rel_path:
+            icon_url = f"https://{owner.lower()}.github.io/{repo_name}/{repo_icon_rel_path}"
 
     arch_summary = f" [AOT: {', '.join(sorted(aot_files.keys()))}]" if aot_files else " [WASM only]"
     status_tag = " (DEPRECATED)" if ext.get("isDeprecated") else ""
@@ -600,6 +602,8 @@ def main():
                 bext_file = output_dir / f"{e['id']}.bext"
                 if bext_file.exists():
                     f.write(f"{args.out_dir}/{e['id']}.bext\n")
+            for icon_file in output_dir.glob("icons/*.*"):
+                f.write(f"{args.out_dir}/icons/{icon_file.name}\n")
 
     deprecated_count = sum(1 for e in all_entries if e.get("isDeprecated"))
     print("\nPackaging summary:")

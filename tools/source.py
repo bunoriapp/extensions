@@ -326,6 +326,13 @@ export_source!(__PASCAL_NAME__Source);
     with open(lib_path, "w", encoding="utf-8") as f:
         f.write(lib_rs)
 
+    # 4. Fetch & optimize website icon (WebP)
+    try:
+        from fetch_icons import fetch_and_save_icon
+        fetch_and_save_icon(target_dir)
+    except Exception as e:
+        print(f"  ⚠ Could not auto-fetch icon: {e}")
+
     print(f"\n✨ Successfully created new source extension: {name} ({ext_id})")
     print(f"  📁 Location:   sources/{ext_id}/")
     print(f"  📄 Manifest:   sources/{ext_id}/manifest.json")
