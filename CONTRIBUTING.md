@@ -165,6 +165,7 @@ Check `sources/<source_id>/manifest.json` and ensure all fields are accurate:
   "authors": ["zenit"],
   "isDeprecated": false,
   "iconUrl": "https://wuxiaworld.site/favicon.ico",
+  "iconPath": "assets/icon.webp",
   "webviewNeeded": false,
   "runnerConcurrency": 3,
   "runnerCooldown": 1000,
