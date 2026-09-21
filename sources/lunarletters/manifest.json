@@ -5,6 +5,11 @@
   "apiVersion": 1,
   "lang": "en",
   "baseUrl": "https://lunarletters.com",
+  "authors": [
+    "Binit06"
+  ],
+  "isDeprecated": true,
+  "deprecationReason": "Website Shut Down",
   "iconUrl": "https://lunarletters.com/favicon.ico",
   "webviewNeeded": false,
   "runnerConcurrency": 3,

@@ -13,6 +13,14 @@ pub struct SourceMetadata {
     pub base_url: String,
     #[serde(rename = "iconUrl", skip_serializing_if = "Option::is_none")]
     pub icon_url: Option<String>,
+    #[serde(default)]
+    pub authors: Vec<String>,
+    #[serde(rename = "isDeprecated", default)]
+    pub is_deprecated: bool,
+    #[serde(rename = "deprecationReason", skip_serializing_if = "Option::is_none")]
+    pub deprecation_reason: Option<String>,
+    #[serde(rename = "suggestedAlternative", skip_serializing_if = "Option::is_none")]
+    pub suggested_alternative: Option<String>,
     #[serde(rename = "webviewNeeded")]
     pub webview_needed: bool,
     #[serde(rename = "runnerConcurrency")]

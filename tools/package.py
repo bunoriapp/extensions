@@ -88,6 +88,24 @@ def format_compound_version(sdk_version: str, raw_version: str) -> str:
     return f"{sdk_version}.{raw_version}"
 
 
+def extract_latest_changelog(changelog_path: Path) -> str | None:
+    """Extracts the notes for the latest version entry from CHANGELOG.md."""
+    if not changelog_path.exists():
+        return None
+    try:
+        content = changelog_path.read_text(encoding="utf-8")
+        matches = list(re.finditer(r"^##\s+\[?([0-9a-zA-Z.\-_ ]+)\]?.*$", content, re.MULTILINE))
+        if not matches:
+            return None
+        start = matches[0].end()
+        end = matches[1].start() if len(matches) > 1 else len(content)
+        notes = content[start:end].strip()
+        return notes if notes else None
+    except Exception as e:
+        print(f"Warning: Failed to parse {changelog_path}: {e}")
+        return None
+
+
 def discover_extensions(project_root: Path, sdk_version: str = "1"):
     extensions = []
     sources_dir = project_root / "sources"
@@ -102,6 +120,24 @@ def discover_extensions(project_root: Path, sdk_version: str = "1"):
                         manifest["_source_dir"] = d
                         manifest["_raw_version"] = manifest.get("version", "0.1")
                         manifest["version"] = format_compound_version(sdk_version, manifest["_raw_version"])
+                        
+                        # Normalize authors
+                        authors = manifest.get("authors")
+                        if isinstance(authors, str):
+                            authors = [authors]
+                        elif not authors and manifest.get("author"):
+                            authors = [manifest["author"]]
+                        manifest["authors"] = authors or []
+
+                        # Deprecation metadata
+                        manifest["isDeprecated"] = bool(manifest.get("isDeprecated", manifest.get("is_deprecated", False)))
+                        manifest["deprecationReason"] = manifest.get("deprecationReason") or manifest.get("deprecation_reason")
+                        manifest["suggestedAlternative"] = manifest.get("suggestedAlternative") or manifest.get("suggested_alternative")
+
+                        # Changelog
+                        changelog_file = d / "CHANGELOG.md"
+                        manifest["latestChangelog"] = extract_latest_changelog(changelog_file)
+                        
                         extensions.append(manifest)
                 except Exception as e:  # noqa: BLE001
                     print(f"Warning: Failed to read manifest in {d}: {e}")
@@ -314,14 +350,22 @@ def build_bext(
         "apiVersion": ext.get("apiVersion", 1),
         "lang": ext.get("lang", "en"),
         "baseUrl": ext.get("baseUrl", ""),
+        "authors": ext.get("authors", []),
+        "isDeprecated": ext.get("isDeprecated", False),
         "iconPath": icon_path,
         "iconUrl": ext.get("iconUrl"),
         "artifacts": sorted(aot_files.keys()),
         "webviewNeeded": ext.get("webviewNeeded", False),
         "runnerConcurrency": ext.get("runnerConcurrency", 3),
         "runnerCooldown": ext.get("runnerCooldown", 1000),
-        "maxAttempts": ext.get("maxAttempts", 3)
+        "maxAttempts": ext.get("maxAttempts", 3),
     }
+    if ext.get("deprecationReason"):
+        manifest["deprecationReason"] = ext["deprecationReason"]
+    if ext.get("suggestedAlternative"):
+        manifest["suggestedAlternative"] = ext["suggestedAlternative"]
+    if ext.get("latestChangelog"):
+        manifest["latestChangelog"] = ext["latestChangelog"]
 
     bext_filename = f"{ext_id}.bext"
     bext_path = bext_dir / bext_filename
@@ -333,6 +377,9 @@ def build_bext(
             zf.write(aot_path, f"artifacts/{abi}/extension.aot")
         if icon_file and icon_path:
             zf.write(icon_file, icon_path)
+        changelog_file = source_dir / "CHANGELOG.md"
+        if changelog_file.exists():
+            zf.write(changelog_file, "CHANGELOG.md")
 
     # Copy icon to output_dir if needed for publishing on repo branch
     if icon_file and icon_path:
@@ -356,15 +403,21 @@ def build_bext(
             icon_url = f"https://{owner.lower()}.github.io/{repo_name}/{icon_path}"
 
     arch_summary = f" [AOT: {', '.join(sorted(aot_files.keys()))}]" if aot_files else " [WASM only]"
-    print(f"  ✓ Packaged {ext['name']} (v{ext['version']}){arch_summary} -> {bext_filename} ({file_size / 1024:.1f} KB)")
+    status_tag = " (DEPRECATED)" if ext.get("isDeprecated") else ""
+    print(f"  ✓ Packaged {ext['name']} (v{ext['version']}){status_tag}{arch_summary} -> {bext_filename} ({file_size / 1024:.1f} KB)")
 
-    return {
+    result_entry = {
         "id": ext_id,
         "name": ext["name"],
         "version": ext["version"],
         "apiVersion": ext.get("apiVersion", 1),
         "lang": ext.get("lang", "en"),
         "baseUrl": ext.get("baseUrl", ""),
+        "authors": ext.get("authors", []),
+        "isDeprecated": ext.get("isDeprecated", False),
+        "deprecationReason": ext.get("deprecationReason"),
+        "suggestedAlternative": ext.get("suggestedAlternative"),
+        "latestChangelog": ext.get("latestChangelog"),
         "iconPath": icon_path,
         "iconUrl": icon_url,
         "bextUrl": bext_download_url,
@@ -376,6 +429,7 @@ def build_bext(
         "runnerCooldown": ext.get("runnerCooldown", 1000),
         "maxAttempts": ext.get("maxAttempts", 3),
     }
+    return {k: v for k, v in result_entry.items() if v is not None}
 
 
 def main():
@@ -547,8 +601,12 @@ def main():
                 if bext_file.exists():
                     f.write(f"{args.out_dir}/{e['id']}.bext\n")
 
+    deprecated_count = sum(1 for e in all_entries if e.get("isDeprecated"))
     print("\nPackaging summary:")
     print(f"  Total extensions: {len(all_entries)}")
+    print(f"  Active:           {len(all_entries) - deprecated_count}")
+    if deprecated_count > 0:
+        print(f"  Deprecated:       {deprecated_count}")
     print(f"  Bumped or new:    {len(changed_or_new_entries)}")
     print(f"  Unchanged:        {len(all_entries) - len(changed_or_new_entries)}")
     print(f"  Release required: {has_release}")

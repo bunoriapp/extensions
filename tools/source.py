@@ -9,10 +9,20 @@ Usage:
 """
 
 import argparse
+import datetime
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
+
+
+def get_default_author() -> str:
+    try:
+        res = subprocess.run(["git", "config", "user.name"], capture_output=True, text=True, check=False)
+        return res.stdout.strip()
+    except Exception:  # noqa: BLE001
+        return ""
 
 
 def sanitize_id(name: str) -> str:
@@ -31,7 +41,14 @@ def to_pascal_case(name: str) -> str:
     return pascal
 
 
-def create_source(name: str, base_url: str, ext_id: str | None = None, lang: str = "en", template: str | None = None):
+def create_source(
+    name: str,
+    base_url: str,
+    ext_id: str | None = None,
+    lang: str = "en",
+    authors: list[str] | str | None = None,
+    template: str | None = None,
+):
     project_root = Path(__file__).resolve().parent.parent
     sources_dir = project_root / "sources"
 
@@ -53,6 +70,14 @@ def create_source(name: str, base_url: str, ext_id: str | None = None, lang: str
     if not base_url.startswith("http://") and not base_url.startswith("https://"):
         base_url = "https://" + base_url
 
+    # Normalize authors list
+    if isinstance(authors, str):
+        author_list = [a.strip() for a in authors.split(",") if a.strip()]
+    elif isinstance(authors, list):
+        author_list = [str(a).strip() for a in authors if str(a).strip()]
+    else:
+        author_list = []
+
     pascal_name = to_pascal_case(name)
 
     # 1. Create directories
@@ -67,6 +92,8 @@ def create_source(name: str, base_url: str, ext_id: str | None = None, lang: str
         "apiVersion": 1,
         "lang": lang,
         "baseUrl": base_url,
+        "authors": author_list,
+        "isDeprecated": False,
         "iconUrl": f"{base_url}/favicon.ico",
         "webviewNeeded": False,
         "runnerConcurrency": 3,
@@ -77,6 +104,16 @@ def create_source(name: str, base_url: str, ext_id: str | None = None, lang: str
     with open(manifest_path, "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=2)
         f.write("\n")
+
+    # 3. Generate CHANGELOG.md
+    today = datetime.date.today().isoformat()
+    changelog_content = f"""# Changelog - {name}
+
+## [0.0] - {today}
+- Initial release.
+"""
+    changelog_path = target_dir / "CHANGELOG.md"
+    changelog_path.write_text(changelog_content, encoding="utf-8")
 
     # 3. Generate Cargo.toml & src/lib.rs
     if template:
@@ -290,16 +327,17 @@ export_source!(__PASCAL_NAME__Source);
         f.write(lib_rs)
 
     print(f"\n✨ Successfully created new source extension: {name} ({ext_id})")
-    print(f"  📁 Location:  sources/{ext_id}/")
-    print(f"  📄 Manifest:  sources/{ext_id}/manifest.json")
-    print(f"  ⚙ Cargo:     sources/{ext_id}/Cargo.toml")
-    print(f"  🦀 Code:      sources/{ext_id}/src/lib.rs")
+    print(f"  📁 Location:   sources/{ext_id}/")
+    print(f"  📄 Manifest:   sources/{ext_id}/manifest.json")
+    print(f"  📝 Changelog:  sources/{ext_id}/CHANGELOG.md")
+    print(f"  ⚙ Cargo:      sources/{ext_id}/Cargo.toml")
+    print(f"  🦀 Code:       sources/{ext_id}/src/lib.rs")
     if template:
-        print(f"  🧩 Template:  templates/{template}/")
+        print(f"  🧩 Template:   templates/{template}/")
     print("\nNext steps:")
     print(f"  1. Test compilation: cargo check --package {ext_id}")
-    print(f"  2. Test host:        python tools/test_extension.py {ext_id}")
-    print(f"  3. Package it:        python tools/package_extensions.py --single {ext_id}\n")
+    print(f"  2. Test host:        python tools/test.py {ext_id} --metadata")
+    print(f"  3. Package it:       python tools/package.py --single {ext_id}\n")
 
 
 def main():
@@ -307,6 +345,7 @@ def main():
     parser.add_argument("-n", "--name", help="Human-readable extension name (e.g. 'Novel Hi')")
     parser.add_argument("-u", "--url", help="Base URL for the website (e.g. 'https://novelhi.com')")
     parser.add_argument("-i", "--id", help="Extension identifier (optional, default: derived from name)")
+    parser.add_argument("-a", "--author", "--authors", dest="authors", help="Author handle(s) (comma-separated, e.g. 'zenit')")
     parser.add_argument("-l", "--lang", default="en", help="Language code (default: 'en')")
     parser.add_argument("-t", "--template", help="Template engine crate to use (e.g. 'madara')")
 
@@ -336,7 +375,26 @@ def main():
         print("Error: Base URL cannot be empty.", file=sys.stderr)
         sys.exit(1)
 
-    create_source(name=name, base_url=url, ext_id=args.id, lang=args.lang, template=args.template)
+    authors = args.authors
+    if not authors and sys.stdin.isatty():
+        default_author = get_default_author()
+        prompt_text = f"Author(s) [{default_author}]: " if default_author else "Author(s) (e.g. zenit): "
+        try:
+            val = input(prompt_text).strip()
+            authors = val if val else (default_author or None)
+        except (KeyboardInterrupt, EOFError):
+            authors = default_author or None
+    elif not authors:
+        authors = get_default_author() or None
+
+    create_source(
+        name=name,
+        base_url=url,
+        ext_id=args.id,
+        lang=args.lang,
+        authors=authors,
+        template=args.template,
+    )
 
 
 if __name__ == "__main__":

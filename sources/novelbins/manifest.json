@@ -5,6 +5,10 @@
   "apiVersion": 1,
   "lang": "en",
   "baseUrl": "https://novelbins.com",
+  "authors": [
+    "Binit06"
+  ],
+  "isDeprecated": false,
   "iconUrl": "https://novelbins.com/favicon.ico",
   "webviewNeeded": false,
   "runnerConcurrency": 5,

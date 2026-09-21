@@ -162,6 +162,8 @@ Check `sources/<source_id>/manifest.json` and ensure all fields are accurate:
   "apiVersion": 1,
   "lang": "en",
   "baseUrl": "https://wuxiaworld.site",
+  "authors": ["zenit"],
+  "isDeprecated": false,
   "iconUrl": "https://wuxiaworld.site/favicon.ico",
   "webviewNeeded": false,
   "runnerConcurrency": 3,
@@ -171,11 +173,18 @@ Check `sources/<source_id>/manifest.json` and ensure all fields are accurate:
 ```
 
 - **`id`**: Unique lowercase identifier with underscores only (must match directory name).
-- **`version`**: Semantic version (`0.0`). Always increment when publishing fixes.
+- **`name`**: Human-readable name of the novel source.
+- **`version`**: Extension version (`0.0`). Always increment when publishing changes.
+- **`authors`**: Array of maintainer handles / names credited for developing the extension (e.g. `["zenit", "contributor2"]`).
+- **`isDeprecated`**: Boolean flag indicating if the source is discontinued / shut down (default: `false`).
+- **`deprecationReason`** *(optional)*: Explanation when `isDeprecated: true` (e.g. `"Website permanently closed"`).
+- **`suggestedAlternative`** *(optional)*: ID of a replacement extension (e.g. `"novelbins"`).
 - **`lang`**: ISO 639-1 language code (e.g. `"en"`, `"es"`, `"ar"`, `"zh"`, `"tr"`).
 - **`baseUrl`**: Canonical root URL without trailing slash.
+- **`webviewNeeded`**: Set to `true` if Cloudflare Turnstile or JS evaluation is strictly required.
 - **`runnerConcurrency`**: Recommended concurrent requests (default: `3`).
 - **`runnerCooldown`**: Delay in milliseconds between requests (default: `1000`).
+- **`maxAttempts`**: Maximum retry attempts on network error (default: `3`).
 
 ---
 
@@ -378,12 +387,71 @@ python tools/test.py <extension_id> \
 
 ## Packaging & Versioning
 
-Extensions are distributed as `.bext` archives containing `manifest.json`, `source.wasm`, and pre-compiled AOT artifacts.
+Extensions are distributed as `.bext` archives containing `manifest.json`, `source.wasm`, `CHANGELOG.md`, and pre-compiled AOT artifacts.
 
 ### Versioning Rules
 Whenever you update an extension, increment the `"version"` field in `manifest.json`:
 - **Bug fix (e.g. selector fix):** Bump patch version (`0.0` -> `0.1`).
 - **Feature update (e.g. added listings/filters):** Bump minor version (`0.0` -> `1.0`).
+
+### Maintaining `CHANGELOG.md`
+Every extension maintains its own `sources/<extension_id>/CHANGELOG.md` following [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format.
+
+Whenever you bump the version in `manifest.json`, you **must** add a new entry to `sources/<extension_id>/CHANGELOG.md`:
+
+```markdown
+# Changelog - Royal Road
+
+## [0.2] - 2026-09-21
+- Added search genre filtering support.
+- Fixed chapter text unescape formatting.
+
+## [0.1] - 2026-09-15
+- Initial release.
+```
+
+The packager extracts the latest release notes from `CHANGELOG.md` and displays them in the Bunori App update prompt.
+
+---
+
+## Extension Deprecation & Discontinuation Policy
+
+If a novel website permanently shuts down, rebrands, or becomes unusable due to intractable anti-bot protection:
+
+1. **Do not delete the source directory immediately** (doing so would orphan existing user installs).
+2. Set `"isDeprecated": true` in `sources/<extension_id>/manifest.json`.
+3. Add a clear `"deprecationReason"` explaining the status.
+4. If a successor or alternate source exists, provide `"suggestedAlternative": "<replacement_id>"`.
+5. Bump the patch version in `manifest.json` and document the deprecation in `CHANGELOG.md`.
+
+Example deprecated `manifest.json`:
+```json
+{
+  "id": "novelfire",
+  "name": "Novel Fire",
+  "version": "0.4",
+  "apiVersion": 1,
+  "lang": "en",
+  "baseUrl": "https://novelfire.net",
+  "authors": ["zenit"],
+  "isDeprecated": true,
+  "deprecationReason": "Domain closed by owner. Replaced by Novel Bins.",
+  "suggestedAlternative": "novelbins"
+}
+```
+
+---
+
+## Authors & Attribution
+
+We believe in giving full credit to contributors.
+- Add your GitHub handle or name to the `"authors"` list in `manifest.json`.
+- If multiple developers contribute to an extension, append additional handles to the list:
+  ```json
+  "authors": ["primary_dev", "contributor_name"]
+  ```
+
+---
 
 ### Packaging Locally
 ```bash
@@ -415,7 +483,9 @@ Before opening a pull request:
 1. Ensure your extension passes `cargo check --workspace`.
 2. Test search, novel details, chapter extraction, and listings using `python tools/test.py`.
 3. Verify that `manifest.json` version has been bumped if modifying an existing source.
-4. Remove temporary debugging logs and test scratch files.
+4. Add corresponding release notes in `sources/<extension_id>/CHANGELOG.md`.
+5. Include your handle in `"authors"` in `manifest.json` for credit.
+6. Remove temporary debugging logs and test scratch files.
 
 ---
 

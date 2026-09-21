@@ -5,6 +5,10 @@
   "apiVersion": 1,
   "lang": "en",
   "baseUrl": "https://readnovelfull.com",
+  "authors": [
+    "Binit06"
+  ],
+  "isDeprecated": false,
   "iconUrl": "https://readnovelfull.com/favicon.ico",
   "webviewNeeded": false,
   "runnerConcurrency": 3,

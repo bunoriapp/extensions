@@ -5,6 +5,10 @@
   "apiVersion": 1,
   "lang": "en",
   "baseUrl": "https://novelfull.com",
+  "authors": [
+    "Binit06"
+  ],
+  "isDeprecated": false,
   "iconUrl": "https://novelfull.com/favicon.ico",
   "webviewNeeded": false,
   "runnerConcurrency": 3,

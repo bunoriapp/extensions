@@ -5,6 +5,10 @@
   "apiVersion": 1,
   "lang": "en",
   "baseUrl": "https://novgo.net",
+  "authors": [
+    "Binit06"
+  ],
+  "isDeprecated": false,
   "iconUrl": "https://novgo.net/favicon.ico",
   "webviewNeeded": true,
   "runnerConcurrency": 2,
