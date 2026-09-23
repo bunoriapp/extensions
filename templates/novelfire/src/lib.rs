@@ -52,12 +52,12 @@ impl NovelFireEngine {
 
             chapter_ajax_endpoint: "ajax/listChapterDataAjax".into(),
             chapter_list_path: "chapters".into(),
-            listing_path: "genre/all/sort".into(),
-            listing_status_path: "status-all".into(),
+            listing_path: "genre-all/sort".into(),
+            listing_status_path: "status-all/all-novel".into(),
 
             list_item_selector: ".novel-item, .item".into(),
             list_link_selector: ".item-body h4 a, h4.novel-title a, h4 a, .item-title a, a".into(),
-            list_cover_selector: "figure.cover img, img.cover, img".into(),
+            list_cover_selector: "figure.cover img, figure.novel-cover img, img.cover, img".into(),
 
             detail_title_selector: "h1.novel-title".into(),
             detail_author_selector: ".author a[itemprop='author'], .author span[itemprop='author'], .author a".into(),
@@ -73,9 +73,10 @@ impl NovelFireEngine {
             chapter_content_selector: "#chapter-content, #content, .content, .chapter-body, .chapter-text".into(),
 
             listings: vec![
-                ListingDto { id: "moved".into(), name: "Latest Updates".into() },
                 ListingDto { id: "popular".into(), name: "Popular".into() },
                 ListingDto { id: "new".into(), name: "New Novels".into() },
+                ListingDto { id: "top-rated".into(), name: "Top Rated".into() },
+                ListingDto { id: "view".into(), name: "Most Viewed".into() },
                 ListingDto { id: "completed".into(), name: "Completed".into() },
             ],
         }
@@ -323,40 +324,62 @@ impl NovelFireEngine {
     }
 
     pub fn get_listing_novels(&self, listing_id: &str, page: i32) -> Result<Vec<SearchResultDto>, String> {
+        let (sort, status) = if listing_id == "completed" {
+            ("popular", "status-completed")
+        } else {
+            (listing_id, "status-all")
+        };
         let list_url = format!(
-            "{}/{}-{}/{}?page={}",
-            self.base_url.trim_end_matches('/'), self.listing_path.trim_matches('/'),
-            listing_id, self.listing_status_path.trim_matches('/'), page
+            "{}/genre-all/sort-{}/{}/all-novel?page={}",
+            self.base_url.trim_end_matches('/'), sort, status, page
         );
         let doc = host::document(&list_url, None)?;
 
         let item_sel = Selector::parse(&self.list_item_selector).map_err(|e| e.to_string())?;
         let link_sel = Selector::parse(&self.list_link_selector).map_err(|e| e.to_string())?;
         let cover_sel = Selector::parse(&self.list_cover_selector).map_err(|e| e.to_string())?;
+        let title_sel = Selector::parse("h4.novel-title, h4, .item-title").map_err(|e| e.to_string())?;
 
         let mut results = Vec::new();
         for item in doc.select(&item_sel) {
             let mut title = String::new();
             let mut url = String::new();
 
-            for a in item.select(&link_sel) {
-                let text = a.text().collect::<Vec<_>>().join("").trim().to_string();
-                let title_attr = a.value().attr("title").unwrap_or("").trim().to_string();
-                let chosen_title = if !text.is_empty() { text } else { title_attr };
+            if let Some(h) = item.select(&title_sel).next() {
+                let t = h.text().collect::<Vec<_>>().join("").trim().to_string();
+                if !t.is_empty() {
+                    title = t;
+                }
+            }
 
-                if !chosen_title.is_empty() {
-                    if let Some(h) = a.value().attr("href") {
-                        if !h.trim().is_empty() && h != "#" {
-                            title = chosen_title;
-                            url = self.abs_url(h);
-                            break;
+            for a in item.select(&link_sel) {
+                if title.is_empty() {
+                    let title_attr = a.value().attr("title").unwrap_or("").trim().to_string();
+                    if !title_attr.is_empty() {
+                        title = title_attr;
+                    } else {
+                        let text = a.text().collect::<Vec<_>>().join("").trim().to_string();
+                        if !text.is_empty() {
+                            title = text;
                         }
+                    }
+                }
+
+                if let Some(h) = a.value().attr("href") {
+                    if !h.trim().is_empty() && h != "#" {
+                        url = self.abs_url(h);
+                        break;
                     }
                 }
             }
 
             let cover_url = item.select(&cover_sel).next()
-                .and_then(|img| img.value().attr("src").or_else(|| img.value().attr("data-src")))
+                .and_then(|img| {
+                    img.value().attr("data-src")
+                        .or_else(|| img.value().attr("data-original"))
+                        .or_else(|| img.value().attr("src"))
+                })
+                .filter(|s| !s.starts_with("data:"))
                 .map(|s| self.abs_url(s));
 
             if !title.is_empty() && !url.is_empty() {

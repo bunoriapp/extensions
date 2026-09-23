@@ -16,6 +16,8 @@ struct NaSearchNovel {
     title: String,
     author: Option<String>,
     cover_url: Option<String>,
+    novel_image: Option<String>,
+    image_url: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -112,7 +114,7 @@ impl Source for NovelArchiveSource {
         let search_data: NaSearchResponse = serde_json::from_str(&resp).map_err(|e| e.to_string())?;
 
         let results = search_data.novels.into_iter().map(|n| {
-            let cover_url = n.cover_url.map(|c| {
+            let cover_url = n.cover_url.or(n.novel_image).or(n.image_url).map(|c| {
                 if c.starts_with('/') {
                     format!("{}{}", meta.base_url, c)
                 } else {
@@ -306,6 +308,61 @@ impl Source for NovelArchiveSource {
         }
 
         Ok(None)
+    }
+
+    fn get_listings(&self) -> Vec<ListingDto> {
+        vec![
+            ListingDto { id: "popular".to_string(), name: "Popular".to_string() },
+            ListingDto { id: "recent".to_string(), name: "Latest Updates".to_string() },
+            ListingDto { id: "rating".to_string(), name: "Top Rated".to_string() },
+            ListingDto { id: "chapters".to_string(), name: "Most Chapters".to_string() },
+        ]
+    }
+
+    fn get_listing_novels(&self, listing_id: &str, page: i32) -> Result<Vec<SearchResultDto>, String> {
+        let meta = self.metadata();
+        let excluded_genres = "adult,smut,mature,erotica,ecchi,hentai,explicit,sexual+content,nsfw,r-18,lewd,pornographic";
+
+        let url = if listing_id.starts_with("genre_") {
+            let genre = &listing_id[6..];
+            format!(
+                "{}/api/novels?genres_include={}&genres_exclude={}&page={}&per_page=24",
+                meta.base_url, genre, excluded_genres, page
+            )
+        } else {
+            let sort = match listing_id {
+                "recent" | "latest" => "recent",
+                "rating" | "top-rated" => "rating",
+                "chapters" => "chapters",
+                _ => "popular",
+            };
+            format!(
+                "{}/api/novels?sort={}&genres_exclude={}&page={}&per_page=24",
+                meta.base_url, sort, excluded_genres, page
+            )
+        };
+
+        let resp = host::get(&url, None)?;
+        let search_data: NaSearchResponse = serde_json::from_str(&resp).map_err(|e| e.to_string())?;
+
+        let results = search_data.novels.into_iter().map(|n| {
+            let cover_url = n.cover_url.or(n.novel_image).or(n.image_url).map(|c| {
+                if c.starts_with('/') {
+                    format!("{}{}", meta.base_url, c)
+                } else {
+                    c
+                }
+            });
+
+            SearchResultDto {
+                url: format!("{}/novel?id={}", meta.base_url, n.id),
+                title: n.title,
+                cover_url,
+                author: n.author,
+            }
+        }).collect();
+
+        Ok(results)
     }
 }
 

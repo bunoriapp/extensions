@@ -5,6 +5,7 @@ import time
 import urllib.error
 import urllib.request
 from pathlib import Path
+
 from curl_cffi import requests as curl_requests
 from wasmtime import Engine, Func, FuncType, Linker, Memory, Module, Store, ValType
 

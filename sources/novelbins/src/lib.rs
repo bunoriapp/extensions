@@ -217,33 +217,60 @@ impl Source for NovelBinsSource {
         vec![
             ListingDto { id: "popular".to_string(), name: "Popular Novels".to_string() },
             ListingDto { id: "latest".to_string(), name: "Latest Release".to_string() },
+            ListingDto { id: "ongoing".to_string(), name: "Ongoing Novels".to_string() },
+            ListingDto { id: "female".to_string(), name: "Female Lead".to_string() },
+            ListingDto { id: "male".to_string(), name: "Male Lead".to_string() },
         ]
     }
 
     fn get_listing_novels(&self, listing_id: &str, page: i32) -> Result<Vec<SearchResultDto>, String> {
         let meta = self.metadata();
-        let sort = if listing_id == "latest" { "latest-release-novel" } else { "hot-novel" };
-        let url = format!("{}/sort/{}?page={}", meta.base_url, sort, page);
+        let path = match listing_id {
+            "latest" => "novel/newchapters",
+            "ongoing" => "novel/ongoing",
+            "female" => "novel/female",
+            "male" => "novel/male",
+            _ => "novel",
+        };
+        let url = format!("{}/{}/?page={}", meta.base_url.trim_end_matches('/'), path, page);
         let doc = host::document(&url, None)?;
 
-        let row_sel = Selector::parse(".list-novel .row").map_err(|e| e.to_string())?;
-        let title_sel = Selector::parse("h3.novel-title a").map_err(|e| e.to_string())?;
-        let cover_sel = Selector::parse("img.cover").map_err(|e| e.to_string())?;
+        let item_sel = Selector::parse(".mt-card-item").map_err(|e| e.to_string())?;
+        let name_sel = Selector::parse("h3.mt-card-name").map_err(|e| e.to_string())?;
+        let avatar_sel = Selector::parse(".mt-card-avatar a").map_err(|e| e.to_string())?;
+        let avatar_div_sel = Selector::parse(".mt-card-avatar").map_err(|e| e.to_string())?;
 
         let mut results = Vec::new();
-        for row in doc.select(&row_sel) {
-            let Some(t_el) = row.select(&title_sel).next() else { continue; };
-            let title = t_el.text().collect::<Vec<_>>().join("").trim().to_string();
-            let Some(href) = t_el.value().attr("href") else { continue; };
-            let novel_url = if href.starts_with("http") { href.to_string() } else { format!("{}{}", meta.base_url, href) };
+        for el in doc.select(&item_sel) {
+            let title = el.select(&name_sel).next()
+                .map(|t| t.text().collect::<Vec<_>>().join("").trim().to_string())
+                .unwrap_or_default();
 
-            let cover_url = row.select(&cover_sel).next()
-                .and_then(|img| img.value().attr("src"))
-                .map(|s| if s.starts_with("http") { s.to_string() } else { format!("{}{}", meta.base_url, s) });
+            let url = el.select(&avatar_sel).next()
+                .and_then(|a| a.value().attr("href"))
+                .map(|h| if h.starts_with("http") { h.to_string() } else { format!("{}{}", meta.base_url, h) })
+                .unwrap_or_default();
 
-            if !title.is_empty() && !novel_url.is_empty() {
+            let cover_url = el.select(&avatar_div_sel).next()
+                .and_then(|div| div.value().attr("style"))
+                .and_then(|style| {
+                    if let Some(start) = style.find("url('") {
+                        let rest = &style[start + 5..];
+                        rest.find("')").map(|end| rest[..end].to_string())
+                    } else if let Some(start) = style.find("url(\"") {
+                        let rest = &style[start + 5..];
+                        rest.find("\")").map(|end| rest[..end].to_string())
+                    } else if let Some(start) = style.find("url(") {
+                        let rest = &style[start + 4..];
+                        rest.find(')').map(|end| rest[..end].to_string())
+                    } else {
+                        None
+                    }
+                });
+
+            if !title.is_empty() && !url.is_empty() {
                 results.push(SearchResultDto {
-                    url: novel_url,
+                    url,
                     title,
                     cover_url,
                     author: None,
