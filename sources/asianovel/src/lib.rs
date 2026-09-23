@@ -63,7 +63,7 @@ impl Source for AsiaNovelSource {
     fn search(&self, query: &str, _page: i32) -> Result<Vec<SearchResultDto>, String> {
         let meta = self.metadata();
         let formatted = query.replace(' ', "+");
-        let search_url = format!("{}/?s={}&post_type=any&sentence=0&orderby=modified&order=desc", meta.base_url, formatted);
+        let search_url = format!("{}/?s={}&post_type=fcn_story&sentence=0&orderby=modified&order=desc", meta.base_url, formatted);
         let doc = host::document(&search_url, Some(Self::default_headers()))?;
         Self::parse_cards(&doc, &meta.base_url)
     }

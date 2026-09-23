@@ -30,7 +30,7 @@ impl ReadNovelFullEngine {
             search_path: "search".into(),
             chapter_endpoint: "ajax-chapter-option".into(),
 
-            list_row_selector: ".list-novel .row, .list-truyen .row, .rank-list .li-row, .li-row".into(),
+            list_row_selector: ".col-truyen-main .list-truyen .row, .col-novel-main .list-novel .row, .col-truyen-main .list-novel .row, .col-content .rank-list .li-row, .col-truyen-main .rank-list .li-row, .col-novel-main .row, .col-truyen-main .row, .rank-list .li-row".into(),
             list_title_selector: "h3.novel-title a, h3.tit a, h3 a".into(),
             list_cover_selector: "img.cover, .pic img, img".into(),
             list_author_selector: "a[href*='/author/'], a[href*='/authors/'], .author".into(),
