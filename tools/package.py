@@ -314,6 +314,40 @@ def compile_all_aot(
     return aot_map
 
 
+def sync_all_icons(extensions: list[dict], output_dir: Path, icons_dir: Path) -> dict[str, str]:
+    """Ensures all discovered extension icons are copied to output_dir/icons/ for repository deployment."""
+    dest_icons_dir = output_dir / "icons"
+    dest_icons_dir.mkdir(parents=True, exist_ok=True)
+    icon_paths = {}
+
+    for ext in extensions:
+        ext_id = ext["id"]
+        source_dir = ext.get("_source_dir")
+        icon_file = None
+        for ext_suffix in (".webp", ".png", ".jpg", ".jpeg"):
+            candidates = []
+            if source_dir:
+                candidates.append(source_dir / f"icon{ext_suffix}")
+            candidates.append(icons_dir / f"{ext_id}{ext_suffix}")
+            for c in candidates:
+                if c.exists():
+                    icon_file = c
+                    break
+            if icon_file:
+                break
+
+        if icon_file:
+            repo_icon_rel_path = f"icons/{ext_id}{icon_file.suffix}"
+            dest_icon = output_dir / repo_icon_rel_path
+            try:
+                shutil.copy2(icon_file, dest_icon)
+                icon_paths[ext_id] = repo_icon_rel_path
+            except Exception as e:
+                print(f"Warning: Failed to copy icon for {ext_id}: {e}")
+
+    return icon_paths
+
+
 def build_bext(
     ext: dict,
     wasm_file: Path,
@@ -488,9 +522,13 @@ def main():
 
     sdk_version = args.sdk_version or get_sdk_version(project_root)
     print(f"Using SDK version: v{sdk_version}")
-    extensions = discover_extensions(project_root, sdk_version)
-    print(f"Found {len(extensions)} extension(s) in source tree.")
+    all_extensions = discover_extensions(project_root, sdk_version)
+    print(f"Found {len(all_extensions)} extension(s) in source tree.")
 
+    # Always ensure all extension icons are copied to output_dir/icons/ for deployment
+    sync_all_icons(all_extensions, output_dir, icons_dir)
+
+    extensions = list(all_extensions)
     target_ids = set()
     if args.single:
         target_ids.add(args.single)
@@ -498,7 +536,7 @@ def main():
         target_ids.update(x.strip() for x in args.include.split(",") if x.strip())
 
     if target_ids:
-        extensions = [e for e in extensions if e["id"] in target_ids]
+        extensions = [e for e in all_extensions if e["id"] in target_ids]
         if not extensions:
             print(f"Error: No extension found matching: {', '.join(sorted(target_ids))}")
             sys.exit(1)
