@@ -13,6 +13,45 @@ impl AsiaNovelSource {
         );
         hdrs
     }
+
+    fn parse_cards(doc: &Html, base_url: &str) -> Result<Vec<SearchResultDto>, String> {
+        let card_sel = Selector::parse("ul#search-result-list li.card, ul#list-of-stories li.card, li.card._story, li.card")
+            .map_err(|e| e.to_string())?;
+        let link_sel = Selector::parse("h3.card__title a, a[href*='/story/']").map_err(|e| e.to_string())?;
+        let author_sel = Selector::parse(".card__by-author a, .card__footer-author a, a.author").map_err(|e| e.to_string())?;
+        let img_sel = Selector::parse(".card__image img, img.wp-post-image, img").map_err(|e| e.to_string())?;
+
+        let mut results = Vec::new();
+        for card in doc.select(&card_sel) {
+            let Some(story_link) = card.select(&link_sel).next() else { continue; };
+            let Some(href) = story_link.value().attr("href") else { continue; };
+            let url = if href.starts_with("http") { href.to_string() } else { format!("{}{}", base_url, href) };
+
+            let title = story_link.text().collect::<Vec<_>>().join("").trim().to_string();
+            if title.is_empty() {
+                continue;
+            }
+
+            let cover_url = card.select(&img_sel).next()
+                .and_then(|img| img.value().attr("src").or_else(|| img.value().attr("data-src")))
+                .map(|s| if s.starts_with("http") { s.to_string() } else { format!("{}{}", base_url, s) });
+
+            let author = card.select(&author_sel).next()
+                .map(|a| a.text().collect::<Vec<_>>().join("").trim().to_string())
+                .filter(|s| !s.is_empty());
+
+            if !url.is_empty() && !results.iter().any(|r: &SearchResultDto| r.url == url) {
+                results.push(SearchResultDto {
+                    url,
+                    title,
+                    cover_url,
+                    author,
+                });
+            }
+        }
+
+        Ok(results)
+    }
 }
 
 impl Source for AsiaNovelSource {
@@ -26,40 +65,7 @@ impl Source for AsiaNovelSource {
         let formatted = query.replace(' ', "+");
         let search_url = format!("{}/?s={}&post_type=any&sentence=0&orderby=modified&order=desc", meta.base_url, formatted);
         let doc = host::document(&search_url, Some(Self::default_headers()))?;
-
-        let card_sel = Selector::parse("ul#search-result-list li.card").map_err(|e| e.to_string())?;
-        let link_sel = Selector::parse("a[href*='/story/']").map_err(|e| e.to_string())?;
-        let title_sel = Selector::parse(".card__title").map_err(|e| e.to_string())?;
-        let img_sel = Selector::parse("img.wp-post-image").map_err(|e| e.to_string())?;
-
-        let mut results = Vec::new();
-        for card in doc.select(&card_sel) {
-            let Some(story_link) = card.select(&link_sel).next() else { continue; };
-            let Some(href) = story_link.value().attr("href") else { continue; };
-            let url = if href.starts_with("http") { href.to_string() } else { format!("{}{}", meta.base_url, href) };
-
-            let link_title = story_link.text().collect::<Vec<_>>().join("").trim().to_string();
-            let title = if !link_title.is_empty() {
-                link_title
-            } else {
-                card.select(&title_sel).next().map(|t| t.text().collect::<Vec<_>>().join("").trim().to_string()).unwrap_or_default()
-            };
-
-            let cover_url = card.select(&img_sel).next()
-                .and_then(|img| img.value().attr("src"))
-                .map(|s| if s.starts_with("http") { s.to_string() } else { format!("{}{}", meta.base_url, s) });
-
-            if !title.is_empty() && !url.is_empty() && !results.iter().any(|r: &SearchResultDto| r.url == url) {
-                results.push(SearchResultDto {
-                    url,
-                    title,
-                    cover_url,
-                    author: None,
-                });
-            }
-        }
-
-        Ok(results)
+        Self::parse_cards(&doc, &meta.base_url)
     }
 
     fn get_novel_details(&self, novel_url: &str) -> Result<NovelDto, String> {
@@ -113,11 +119,11 @@ impl Source for AsiaNovelSource {
 
                                     if !url.is_empty() {
                                         chapters.push(ChapterDto {
-                                            url: url.to_string(),
-                                            title: chap_title,
-                                            index: pos,
-                                            release_date: None,
-                                            scanlation: None,
+                                             url: url.to_string(),
+                                             title: chap_title,
+                                             index: pos,
+                                             release_date: None,
+                                             scanlation: None,
                                         });
                                     }
                                 }
@@ -184,6 +190,44 @@ impl Source for AsiaNovelSource {
         }
 
         Ok(Some(content.trim().to_string()))
+    }
+
+    fn get_listings(&self) -> Vec<ListingDto> {
+        vec![
+            ListingDto { id: "updated".to_string(), name: "Latest Updates".to_string() },
+            ListingDto { id: "published".to_string(), name: "New Stories".to_string() },
+            ListingDto { id: "popular".to_string(), name: "Most Comments".to_string() },
+            ListingDto { id: "words".to_string(), name: "Most Words".to_string() },
+            ListingDto { id: "title".to_string(), name: "Alphabetical (A-Z)".to_string() },
+        ]
+    }
+
+    fn get_listing_novels(&self, listing_id: &str, page: i32) -> Result<Vec<SearchResultDto>, String> {
+        let meta = self.metadata();
+        let list_url = if listing_id.starts_with("genre_") {
+            let slug = &listing_id[6..];
+            if page <= 1 {
+                format!("{}/genre/{}/", meta.base_url.trim_end_matches('/'), slug)
+            } else {
+                format!("{}/genre/{}/page/{}/", meta.base_url.trim_end_matches('/'), slug, page)
+            }
+        } else {
+            let (orderby, order) = match listing_id {
+                "published" | "new" => ("date", "desc"),
+                "popular" | "comments" => ("comment_count", "desc"),
+                "words" => ("words", "desc"),
+                "title" | "az" => ("title", "asc"),
+                _ => ("modified", "desc"), // "updated" / default
+            };
+            if page <= 1 {
+                format!("{}/stories/?orderby={}&order={}", meta.base_url.trim_end_matches('/'), orderby, order)
+            } else {
+                format!("{}/stories/page/{}/?orderby={}&order={}", meta.base_url.trim_end_matches('/'), page, orderby, order)
+            }
+        };
+
+        let doc = host::document(&list_url, Some(Self::default_headers()))?;
+        Self::parse_cards(&doc, &meta.base_url)
     }
 }
 
