@@ -1,0 +1,15 @@
+repo/index.json
+repo/index.min.json
+repo/icons/novgo.webp
+repo/icons/novelbins.webp
+repo/icons/novelbuddy.webp
+repo/icons/lunarletters.webp
+repo/icons/wuxiaworldsite.webp
+repo/icons/royalroad.webp
+repo/icons/novelfire.webp
+repo/icons/readnovelfull.webp
+repo/icons/novelupdates.webp
+repo/icons/novelfull.webp
+repo/icons/asianovel.webp
+repo/icons/novelarchive.webp
+repo/icons/novelphoenix.webp

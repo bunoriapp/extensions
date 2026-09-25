@@ -1,0 +1,345 @@
+{
+  "repoName": "extensions",
+  "version": 1,
+  "extensions": [
+    {
+      "id": "asianovel",
+      "name": "AsiaNovel",
+      "version": "1.0.3",
+      "apiVersion": 1,
+      "lang": "en",
+      "baseUrl": "https://www.asianovel.net",
+      "authors": [
+        "Binit06"
+      ],
+      "isDeprecated": false,
+      "latestChangelog": "- Fixed search to limit only to novels",
+      "iconPath": "assets/icon.webp",
+      "iconUrl": "https://bunoriapp.github.io/extensions/icons/asianovel.webp",
+      "bextUrl": "https://github.com/bunoriapp/extensions/releases/download/v-8060d73/asianovel.bext",
+      "size": 1327234,
+      "sha256": "765fdc098590d1e4a73b158bc0304312600053bad2a7023aafa55d79a2152e16",
+      "artifacts": [
+        "arm64-v8a",
+        "x86_64"
+      ],
+      "webviewNeeded": false,
+      "runnerConcurrency": 3,
+      "runnerCooldown": 1000,
+      "maxAttempts": 3
+    },
+    {
+      "id": "lunarletters",
+      "name": "LunarLetters",
+      "version": "1.0.0",
+      "apiVersion": 1,
+      "lang": "en",
+      "baseUrl": "https://lunarletters.com",
+      "authors": [
+        "Binit06"
+      ],
+      "isDeprecated": true,
+      "deprecationReason": "Website Shut Down",
+      "latestChangelog": "- **DEPRECATED** : The website has been permanently closed.",
+      "iconPath": "assets/icon.webp",
+      "iconUrl": "https://bunoriapp.github.io/extensions/icons/lunarletters.webp",
+      "bextUrl": "https://github.com/bunoriapp/extensions/releases/download/v-8060d73/lunarletters.bext",
+      "size": 1337945,
+      "sha256": "12427e2491a84813c4dbee9b5620df958894020282ad7c1a0f66738f3b78baef",
+      "artifacts": [
+        "arm64-v8a",
+        "x86_64"
+      ],
+      "webviewNeeded": false,
+      "runnerConcurrency": 3,
+      "runnerCooldown": 1000,
+      "maxAttempts": 3
+    },
+    {
+      "id": "novgo",
+      "name": "Nov Go",
+      "version": "1.0.2",
+      "apiVersion": 1,
+      "lang": "en",
+      "baseUrl": "https://novgo.net",
+      "authors": [
+        "Binit06"
+      ],
+      "isDeprecated": false,
+      "latestChangelog": "- Initial release.",
+      "iconPath": "assets/icon.webp",
+      "iconUrl": "https://bunoriapp.github.io/extensions/icons/novgo.webp",
+      "bextUrl": "https://github.com/bunoriapp/extensions/releases/download/v-8060d73/novgo.bext",
+      "size": 1301145,
+      "sha256": "a8c46b74ccb64ee03a302b580406306e80426b267fac5bf26e513535c0586d29",
+      "artifacts": [
+        "arm64-v8a",
+        "x86_64"
+      ],
+      "webviewNeeded": true,
+      "runnerConcurrency": 2,
+      "runnerCooldown": 1000,
+      "maxAttempts": 3
+    },
+    {
+      "id": "novelarchive",
+      "name": "Novel Archive",
+      "version": "1.0.4",
+      "apiVersion": 1,
+      "lang": "en",
+      "baseUrl": "https://novelarchive.cc",
+      "authors": [
+        "Binit06"
+      ],
+      "isDeprecated": false,
+      "latestChangelog": "- Added novel listing\n- Added genre listing",
+      "iconPath": "assets/icon.webp",
+      "iconUrl": "https://bunoriapp.github.io/extensions/icons/novelarchive.webp",
+      "bextUrl": "https://github.com/bunoriapp/extensions/releases/download/v-8060d73/novelarchive.bext",
+      "size": 475477,
+      "sha256": "be380e0ebc986a438f10b2228d8bc2d1d522d08ed464396a5f8841e66cc5a5f0",
+      "artifacts": [
+        "arm64-v8a",
+        "x86_64"
+      ],
+      "webviewNeeded": false,
+      "runnerConcurrency": 3,
+      "runnerCooldown": 1000,
+      "maxAttempts": 3
+    },
+    {
+      "id": "novelbins",
+      "name": "Novel Bins",
+      "version": "1.0.3",
+      "apiVersion": 1,
+      "lang": "en",
+      "baseUrl": "https://novelbins.com",
+      "authors": [
+        "Binit06"
+      ],
+      "isDeprecated": false,
+      "latestChangelog": "- Fixed novel listings\n- Fixed genre listings",
+      "iconPath": "assets/icon.webp",
+      "iconUrl": "https://bunoriapp.github.io/extensions/icons/novelbins.webp",
+      "bextUrl": "https://github.com/bunoriapp/extensions/releases/download/v-8060d73/novelbins.bext",
+      "size": 1361600,
+      "sha256": "c2bc5bbbdf7946221dbf3234bc39c7b4bf3768d10fd0d99d573ca4243f57fe16",
+      "artifacts": [
+        "arm64-v8a",
+        "x86_64"
+      ],
+      "webviewNeeded": false,
+      "runnerConcurrency": 5,
+      "runnerCooldown": 1000,
+      "maxAttempts": 3
+    },
+    {
+      "id": "novelfire",
+      "name": "Novel Fire",
+      "version": "1.0.4",
+      "apiVersion": 1,
+      "lang": "en",
+      "baseUrl": "https://novelfire.net",
+      "authors": [
+        "Binit06"
+      ],
+      "isDeprecated": false,
+      "latestChangelog": "- Updated to match template",
+      "iconPath": "assets/icon.webp",
+      "iconUrl": "https://bunoriapp.github.io/extensions/icons/novelfire.webp",
+      "bextUrl": "https://github.com/bunoriapp/extensions/releases/download/v-8060d73/novelfire.bext",
+      "size": 1347377,
+      "sha256": "62a51b025fbb684e9541d33ca57ba7a0eaae58ac133106d9e4981ae52f2880f7",
+      "artifacts": [
+        "arm64-v8a",
+        "x86_64"
+      ],
+      "webviewNeeded": false,
+      "runnerConcurrency": 4,
+      "runnerCooldown": 1000,
+      "maxAttempts": 3
+    },
+    {
+      "id": "novelfull",
+      "name": "Novel Full",
+      "version": "1.0.3",
+      "apiVersion": 1,
+      "lang": "en",
+      "baseUrl": "https://novelfull.com",
+      "authors": [
+        "Binit06"
+      ],
+      "isDeprecated": false,
+      "latestChangelog": "- Updated to latest template",
+      "iconPath": "assets/icon.webp",
+      "iconUrl": "https://bunoriapp.github.io/extensions/icons/novelfull.webp",
+      "bextUrl": "https://github.com/bunoriapp/extensions/releases/download/v-8060d73/novelfull.bext",
+      "size": 1304720,
+      "sha256": "14cadeaefa6c2083bee6181346c1cb5665294918d22c2518b023dc3f4f93b0fc",
+      "artifacts": [
+        "arm64-v8a",
+        "x86_64"
+      ],
+      "webviewNeeded": false,
+      "runnerConcurrency": 3,
+      "runnerCooldown": 1000,
+      "maxAttempts": 3
+    },
+    {
+      "id": "novelphoenix",
+      "name": "Novel Phoenix",
+      "version": "1.0.3",
+      "apiVersion": 1,
+      "lang": "en",
+      "baseUrl": "https://novelphoenix.com",
+      "authors": [
+        "Binit06"
+      ],
+      "isDeprecated": false,
+      "latestChangelog": "- Updated to match novelfire template",
+      "iconPath": "assets/icon.webp",
+      "iconUrl": "https://bunoriapp.github.io/extensions/icons/novelphoenix.webp",
+      "bextUrl": "https://github.com/bunoriapp/extensions/releases/download/v-8060d73/novelphoenix.bext",
+      "size": 1353629,
+      "sha256": "c4bb58d77251dcacdc799157be74eaf0d9227561eeada4ff39c1edaba654270a",
+      "artifacts": [
+        "arm64-v8a",
+        "x86_64"
+      ],
+      "webviewNeeded": false,
+      "runnerConcurrency": 3,
+      "runnerCooldown": 1000,
+      "maxAttempts": 3
+    },
+    {
+      "id": "novelupdates",
+      "name": "Novel Updates",
+      "version": "1.0.11",
+      "apiVersion": 1,
+      "lang": "en",
+      "baseUrl": "https://www.novelupdates.com",
+      "authors": [
+        "Binit06"
+      ],
+      "isDeprecated": false,
+      "latestChangelog": "- Initial release.",
+      "iconPath": "assets/icon.webp",
+      "iconUrl": "https://bunoriapp.github.io/extensions/icons/novelupdates.webp",
+      "bextUrl": "https://github.com/bunoriapp/extensions/releases/download/v-8060d73/novelupdates.bext",
+      "size": 1350284,
+      "sha256": "92057df556eddf1f5200b238da56e8f47fee43e55f51be7be2caeb8236c24051",
+      "artifacts": [
+        "arm64-v8a",
+        "x86_64"
+      ],
+      "webviewNeeded": true,
+      "runnerConcurrency": 1,
+      "runnerCooldown": 9000,
+      "maxAttempts": 3
+    },
+    {
+      "id": "novelbuddy",
+      "name": "NovelBuddy",
+      "version": "1.0.1",
+      "apiVersion": 1,
+      "lang": "en",
+      "baseUrl": "https://novelbuddy.me",
+      "authors": [
+        "Binit06"
+      ],
+      "isDeprecated": false,
+      "latestChangelog": "- Initial release.",
+      "iconPath": "assets/icon.webp",
+      "iconUrl": "https://bunoriapp.github.io/extensions/icons/novelbuddy.webp",
+      "bextUrl": "https://github.com/bunoriapp/extensions/releases/download/v-8060d73/novelbuddy.bext",
+      "size": 2944771,
+      "sha256": "bf72ddd05b803853f7b2795ad6e0cbe4644712d4cec39f0e15cda7a2ef6e97e2",
+      "artifacts": [
+        "arm64-v8a",
+        "x86_64"
+      ],
+      "webviewNeeded": false,
+      "runnerConcurrency": 3,
+      "runnerCooldown": 1000,
+      "maxAttempts": 3
+    },
+    {
+      "id": "readnovelfull",
+      "name": "Read Novel Full",
+      "version": "1.0.1",
+      "apiVersion": 1,
+      "lang": "en",
+      "baseUrl": "https://readnovelfull.com",
+      "authors": [
+        "Binit06"
+      ],
+      "isDeprecated": false,
+      "latestChangelog": "- Update to latest template",
+      "iconPath": "assets/icon.webp",
+      "iconUrl": "https://bunoriapp.github.io/extensions/icons/readnovelfull.webp",
+      "bextUrl": "https://github.com/bunoriapp/extensions/releases/download/v-8060d73/readnovelfull.bext",
+      "size": 1305572,
+      "sha256": "c362da97caf101236f57639c4a0a910ea2a77367a08ab8a5b74f351f95f5f936",
+      "artifacts": [
+        "arm64-v8a",
+        "x86_64"
+      ],
+      "webviewNeeded": false,
+      "runnerConcurrency": 3,
+      "runnerCooldown": 1000,
+      "maxAttempts": 3
+    },
+    {
+      "id": "royalroad",
+      "name": "Royal Road",
+      "version": "1.0.1",
+      "apiVersion": 1,
+      "lang": "en",
+      "baseUrl": "https://www.royalroad.com",
+      "authors": [
+        "Binit06"
+      ],
+      "isDeprecated": false,
+      "latestChangelog": "- Initial release.",
+      "iconPath": "assets/icon.webp",
+      "iconUrl": "https://bunoriapp.github.io/extensions/icons/royalroad.webp",
+      "bextUrl": "https://github.com/bunoriapp/extensions/releases/download/v-8060d73/royalroad.bext",
+      "size": 1332156,
+      "sha256": "afeb5576508c3742f548473ac6a62b7cd3510750e8916f9a798ebc28ee65fee4",
+      "artifacts": [
+        "arm64-v8a",
+        "x86_64"
+      ],
+      "webviewNeeded": false,
+      "runnerConcurrency": 3,
+      "runnerCooldown": 1000,
+      "maxAttempts": 3
+    },
+    {
+      "id": "wuxiaworldsite",
+      "name": "WuxiaWorld.Site",
+      "version": "1.0.0",
+      "apiVersion": 1,
+      "lang": "en",
+      "baseUrl": "https://wuxiaworld.site",
+      "authors": [
+        "Binit06"
+      ],
+      "isDeprecated": false,
+      "latestChangelog": "- Initial release.",
+      "iconPath": "assets/icon.webp",
+      "iconUrl": "https://bunoriapp.github.io/extensions/icons/wuxiaworldsite.webp",
+      "bextUrl": "https://github.com/bunoriapp/extensions/releases/download/v-8060d73/wuxiaworldsite.bext",
+      "size": 1342161,
+      "sha256": "f5341ca6f5f7318e36800bb25a0f288f32038726df38e168d34c57ec7beabffa",
+      "artifacts": [
+        "arm64-v8a",
+        "x86_64"
+      ],
+      "webviewNeeded": false,
+      "runnerConcurrency": 3,
+      "runnerCooldown": 1000,
+      "maxAttempts": 3
+    }
+  ]
+}
