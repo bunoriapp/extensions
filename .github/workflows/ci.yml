@@ -42,10 +42,16 @@ jobs:
             echo "compile_all=true" >> "$GITHUB_OUTPUT"
             echo "changed_exts=" >> "$GITHUB_OUTPUT"
           else
-            EXTS=$(echo "$DIFF_FILES" | grep -E '^sources/' | cut -d'/' -f2 | sort -u | paste -sd, -)
+            RAW_EXTS=$(echo "$DIFF_FILES" | grep -E '^sources/' | cut -d'/' -f2 | sort -u)
+            EXISTING_EXTS=""
+            for ext in $RAW_EXTS; do
+              if [ -d "sources/$ext" ]; then
+                EXISTING_EXTS="${EXISTING_EXTS:+$EXISTING_EXTS,}$ext"
+              fi
+            done
             echo "compile_all=false" >> "$GITHUB_OUTPUT"
-            echo "changed_exts=$EXTS" >> "$GITHUB_OUTPUT"
-            echo "Changed extensions: ${EXTS:-none}"
+            echo "changed_exts=$EXISTING_EXTS" >> "$GITHUB_OUTPUT"
+            echo "Changed extensions: ${EXISTING_EXTS:-none}"
           fi
 
       - name: Set up Rust & WebAssembly Target

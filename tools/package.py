@@ -536,10 +536,14 @@ def main():
         target_ids.update(x.strip() for x in args.include.split(",") if x.strip())
 
     if target_ids:
+        found_ids = {e["id"] for e in all_extensions}
+        missing_ids = target_ids - found_ids
+        if missing_ids:
+            print(f"Notice: Extension(s) not found in sources/ (e.g. deleted): {', '.join(sorted(missing_ids))}")
         extensions = [e for e in all_extensions if e["id"] in target_ids]
         if not extensions:
-            print(f"Error: No extension found matching: {', '.join(sorted(target_ids))}")
-            sys.exit(1)
+            print(f"No active extensions to package for requested target IDs: {', '.join(sorted(target_ids))}")
+            sys.exit(0)
 
     existing_index = None
     if not args.no_remote_baseline:

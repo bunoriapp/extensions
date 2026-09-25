@@ -25,13 +25,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "annasarchive"
-version = "0.1.0"
-dependencies = [
- "bunori-sdk",
-]
-
-[[package]]
 name = "asianovel"
 version = "0.1.0"
 dependencies = [
