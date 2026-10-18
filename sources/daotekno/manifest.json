@@ -1,0 +1,17 @@
+{
+  "id": "daotekno",
+  "name": "DaoTekno",
+  "version": "0.1",
+  "apiVersion": 1,
+  "lang": "en",
+  "baseUrl": "https://daotekno.com",
+  "authors": [
+    "Binit06"
+  ],
+  "isDeprecated": false,
+  "iconUrl": "https://daotekno.com/favicon.ico",
+  "webviewNeeded": true,
+  "runnerConcurrency": 3,
+  "runnerCooldown": 1000,
+  "maxAttempts": 3
+}

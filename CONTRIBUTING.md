@@ -375,7 +375,21 @@ When you run `python tools/test.py`, log messages will appear in real time:
 
 ### Testing Sites with Anti-Bot / Cloudflare
 
-If a site requires Cloudflare clearance or authentication cookies during local testing, pass them using the `--cookie` and `--user-agent` flags:
+If a site requires Cloudflare clearance or authentication cookies during local testing, you can either automatically grab them via browser or pass them manually.
+
+#### 1. Automatic Cloudflare Grabber (`--grab-cf`):
+You can have `test.py` automatically launch a browser using the extension's configured headers (e.g. mobile user agent) to grab `cf_clearance` and save it to `tools/cookies`:
+
+```bash
+# Standalone: Open browser to grab cookie, save to tools/cookies, and exit
+python tools/test.py <extension_id> --grab-cf
+
+# Integrated: Auto-grab/refresh on 403 or when missing while testing
+python tools/test.py <extension_id> --search "sword" --grab-cf
+```
+
+#### 2. Manual Cookies & User-Agent:
+Pass them using the `--cookie` and `--user-agent` flags:
 
 ```bash
 python tools/test.py <extension_id> \
